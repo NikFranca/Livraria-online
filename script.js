@@ -31,3 +31,16 @@ document.getElementById("cadastroForm").addEventListener("submit", function (eve
 
     console.log("Formulário enviado com sucesso");
 });
+
+//histórico de empréstimos
+app.get("/historico", (req, res) => {
+    const sql = "SELECT emprestimos.livro_id, emprestimos.usuario, emprestimos.data_emprestimo, livros.titulo FROM emprestimos JOIN livros ON emprestimos.livro_id = livros.id";
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error("Erro ao buscar histórico de empréstimos:", err);
+            res.status(500).json({ error: "Erro ao buscar histórico de empréstimos" });
+            return;
+        }
+        res.json(results);
+    });
+});

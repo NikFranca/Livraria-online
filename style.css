@@ -17,9 +17,10 @@ body {
     align-items: center;
     justify-content: center;
     height: 100vh;
+    overflow: auto; 
 }
 
-/* TÍTULO */
+/* TiTULO */
 h1 {
     font-size: 3rem;
     margin-bottom: 30px;
@@ -155,7 +156,6 @@ button:hover {
     background-color: #4a54e1;
 }
 
-/* LINKS COMO BOTÕES */
 a, a:active {
     display: block;
     margin: 13px auto;
@@ -174,7 +174,7 @@ a:hover {
     color: white;
 }
 
-/* CONTAINER DE BOTÕES */
+
 #butao {
     margin-top: 30px;
     display: flex;
@@ -183,7 +183,7 @@ a:hover {
     padding: 10px;
 }
 
-/* RESPONSIVIDADE */
+
 @media (max-width: 500px) {
     input, button {
         font-size: 14px;
@@ -194,3 +194,36 @@ a:hover {
         max-width: 100%;
     }
 }
+
+
+#historico {
+    margin-top: 20px;
+    padding: 25px;
+    background-color: #f4f4f9;
+    border-radius: 10px;
+    height: 440px; 
+    overflow-y: auto;
+}
+
+#historico div {
+    background-color: #ffffff;
+    border: 2px solid #ddd;
+    padding: 25px;
+    margin: 10px 0;
+    border-radius: 8px;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+#historico div span {
+    font-weight: bold;
+    color: #000000;
+}
+
+#historico h2 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #5c67f2;
+}
+
