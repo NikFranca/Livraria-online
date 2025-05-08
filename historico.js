@@ -12,12 +12,12 @@ fetch("http://localhost:3000/historico")
             div.classList.add("registro");
 
             div.innerHTML = `
-                <strong>Usuário:</strong> ${item.usuario} <br>
-                <strong>Livro:</strong> ${item.titulo} <br>
-                <strong>Data:</strong> ${new Date(item.data_emprestimo).toLocaleDateString("pt-BR")}
-                ${new Date(item.data_emprestimo).toLocaleTimeString("pt-BR")} <br>
-                <button class="btn-devolver" data-id="${item.id}">Devolver</button>
-                <hr>
+                     <strong>Usuário:</strong> ${item.usuario} <br>
+                    <strong>Livro:</strong> ${item.titulo} <br>
+                    <strong>Data:</strong> ${new Date(item.data_emprestimo).toLocaleDateString("pt-BR")}
+                    ${new Date(item.data_emprestimo).toLocaleTimeString("pt-BR")} <br>
+                    <button class="btn-devolver" data-id="${item.id}">Devolver</button>
+                    <hr>
             `;
 
             container.appendChild(div);
