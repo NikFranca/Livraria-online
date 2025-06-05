@@ -120,8 +120,7 @@ app.post("/devolver", (req, res) => {
     });
 });
 
-
-
+// Rota para avaliar livro
 app.post("/avaliar", (req, res) => {
     console.log("Dados recebidos para avaliação:", req.body);
     const { emprestimo_id, nota, comentario } = req.body;
@@ -140,8 +139,34 @@ app.post("/avaliar", (req, res) => {
     });
 });
 
+// Rota para listar avaliações
+app.get("/avaliacoes", (req, res) => {
+    const sql = `
+        SELECT 
+            avaliacoes.id,
+            livros.titulo,
+            emprestimos.usuario,
+            avaliacoes.nota,
+            avaliacoes.comentario,
+            avaliacoes.data_avaliacao
+        FROM avaliacoes
+        JOIN emprestimos ON avaliacoes.emprestimo_id = emprestimos.id
+        JOIN livros ON emprestimos.livro_id = livros.id
+        ORDER BY avaliacoes.data_avaliacao DESC
+    `;
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error("Erro ao buscar avaliações:", err);
+            return res.status(500).json({ message: "Erro ao buscar avaliações." });
+        }
+        res.json(results);
+    });
+});
+
 
 // Inicia o servidor na porta 3000
 app.listen(3000, () => {
     console.log("Servidor rodando na porta 3000");
 });
+
+

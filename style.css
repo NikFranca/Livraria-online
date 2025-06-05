@@ -244,10 +244,37 @@ a:hover {
     height: 120px;
     font-size: 16px;
     padding: 10px;
-    resize: vertical; /* permite que o usuário aumente se quiser */
+    resize: vertical; 
 }
 #comentarioAvaliacao:focus {
     border-color: #5c67f2;
     outline: none;
     box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+#avaliacoesContainer {
+  display: flex;
+  flex-wrap: wrap; /* permite quebra de linha automática */
+  gap: 20px;
+  padding: 20px;
+  justify-content: center; /* centraliza os cards */
+}
+
+.avaliacao {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 16px;
+  width: 300px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-sizing: border-box;
+  transition: transform 0.3s;
+}
+
+.avaliacao:hover {
+  transform: translateY(-5px);
+}
+
+.avaliacao p {
+  margin: 5px 0;
 }
