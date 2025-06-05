@@ -4,7 +4,7 @@ const cors = require("cors");
 
 const app = express();
 
-//permitir acesso do front (127.0.0.1:5500)
+// Permitir acesso do frontend (localhost:5500, onde você roda HTML/CSS/JS)
 app.use(cors({
     origin: "http://127.0.0.1:5500"
 }));
@@ -15,10 +15,11 @@ app.use(express.json());
 const db = mysql.createConnection({
     host: "localhost",
     user: "root",
-    password: "@Franca2004",
+    password: "Amandinha132004", // sua senha está correta aqui
     database: "livraria"
 });
 
+// Testar a conexão com o banco
 db.connect((err) => {
     if (err) {
         console.error("Erro ao conectar ao banco:", err);
@@ -27,7 +28,7 @@ db.connect((err) => {
     console.log("Conectado ao banco de dados!");
 });
 
-//cadastrar
+// Rota para cadastrar livro
 app.post("/cadastrar", (req, res) => {
     const { titulo, autor, genero } = req.body;
     if (!titulo || !autor || !genero) {
@@ -44,34 +45,19 @@ app.post("/cadastrar", (req, res) => {
     });
 });
 
-//Inicia o servidor
-app.listen(3000, () => {
-    console.log("Servidor rodando na porta 3000");
-});
-
-//aceitar todas as origens durante desenvolvimento
-app.use(cors({
-    origin: "http://127.0.0.1:5500"
-}));
-
-
-
-//listar todos os livros para o select
+// Rota para listar livros no select
 app.get("/livros", (req, res) => {
     const sql = "SELECT id, titulo FROM livros";
     db.query(sql, (err, results) => {
         if (err) {
             console.error("Erro ao buscar livros:", err);
-            res.status(500).json({ error: "Erro ao buscar livros" });
-            return;
+            return res.status(500).json({ error: "Erro ao buscar livros" });
         }
-        console.log(results);
         res.json(results);
     });
 });
 
-
-//registrar empréstimo
+// Rota para registrar empréstimo
 app.post("/emprestar", (req, res) => {
     const { livro_id, usuario } = req.body;
     const data_emprestimo = new Date();
@@ -80,14 +66,13 @@ app.post("/emprestar", (req, res) => {
     db.query(sql, [livro_id, usuario, data_emprestimo], (err, result) => {
         if (err) {
             console.error("Erro ao registrar empréstimo:", err);
-            res.status(500).json({ error: "Erro ao registrar empréstimo" });
-            return;
+            return res.status(500).json({ error: "Erro ao registrar empréstimo" });
         }
         res.json({ message: "Empréstimo registrado com sucesso!" });
     });
 });
 
-
+// Rota para histórico de empréstimos
 app.get("/historico", (req, res) => {
     const sql = `
         SELECT emprestimos.id, livros.titulo, emprestimos.usuario, emprestimos.data_emprestimo
@@ -103,9 +88,7 @@ app.get("/historico", (req, res) => {
     });
 });
 
-
-
-//Rota para devolver um livro
+// Rota para devolver livro
 app.post("/devolver", (req, res) => {
     const { id } = req.body;
     if (!id) {
@@ -120,11 +103,14 @@ app.post("/devolver", (req, res) => {
         }
 
         if (result.affectedRows === 0) {
-            console.log("Empréstimo não encontrado no banco de dados.");
             return res.status(404).json({ message: "Empréstimo não encontrado." });
         }
 
-        console.log("Livro devolvido com sucesso!");
-        res.json({ message: "Livro devolvido com sucesso!", deletedEmpréstimo: result });
+        res.json({ message: "Livro devolvido com sucesso!" });
     });
+});
+
+// Inicia o servidor na porta 3000
+app.listen(3000, () => {
+    console.log("Servidor rodando na porta 3000");
 });
