@@ -45,11 +45,11 @@ fetch("http://localhost:3000/historico")
                             button.disabled = true;
                             button.textContent = "Devolvido";
                         }
-                        alert(data.message); //Mensagens de sucesso ou erro
+                        showToast(data.message);// Exibe a mensagem de sucesso
                     })
                     .catch(err => {
                         console.error("Erro ao devolver:", err);
-                        alert("Erro ao comunicar com o servidor.");
+                        showToast("Erro ao comunicar com o servidor.");
                     });
             });
         });
