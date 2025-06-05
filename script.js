@@ -34,13 +34,18 @@ document.getElementById("cadastroForm").addEventListener("submit", function (eve
 
 //histórico de empréstimos
 app.get("/historico", (req, res) => {
-    const sql = "SELECT emprestimos.livro_id, emprestimos.usuario, emprestimos.data_emprestimo, livros.titulo FROM emprestimos JOIN livros ON emprestimos.livro_id = livros.id";
+    const sql = `
+      SELECT emprestimos.id, livros.titulo, emprestimos.usuario, emprestimos.data_emprestimo
+      FROM emprestimos
+      JOIN livros ON emprestimos.livro_id = livros.id
+      WHERE emprestimos.data_devolucao IS NULL
+    `;
     db.query(sql, (err, results) => {
         if (err) {
-            console.error("Erro ao buscar histórico de empréstimos:", err);
-            res.status(500).json({ error: "Erro ao buscar histórico de empréstimos" });
-            return;
+            console.error("Erro ao buscar histórico:", err);
+            return res.status(500).json({ error: "Erro ao buscar histórico" });
         }
         res.json(results);
     });
 });
+

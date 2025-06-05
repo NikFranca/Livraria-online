@@ -28,6 +28,12 @@ db.connect((err) => {
     console.log("Conectado ao banco de dados!");
 });
 
+app.use((req, res, next) => {
+  console.log(`Recebida requisição: ${req.method} ${req.url}`);
+  next();
+});
+
+
 // Rota para cadastrar livro
 app.post("/cadastrar", (req, res) => {
     const { titulo, autor, genero } = req.body;
@@ -75,9 +81,10 @@ app.post("/emprestar", (req, res) => {
 // Rota para histórico de empréstimos
 app.get("/historico", (req, res) => {
     const sql = `
-        SELECT emprestimos.id, livros.titulo, emprestimos.usuario, emprestimos.data_emprestimo
-        FROM emprestimos
-        JOIN livros ON emprestimos.livro_id = livros.id
+      SELECT emprestimos.id, livros.titulo, emprestimos.usuario, emprestimos.data_emprestimo
+      FROM emprestimos
+      JOIN livros ON emprestimos.livro_id = livros.id
+      WHERE emprestimos.data_devolucao IS NULL
     `;
     db.query(sql, (err, results) => {
         if (err) {
@@ -88,14 +95,17 @@ app.get("/historico", (req, res) => {
     });
 });
 
+
 // Rota para devolver livro
 app.post("/devolver", (req, res) => {
     const { id } = req.body;
+
     if (!id) {
         return res.status(400).json({ message: "ID do empréstimo é obrigatório." });
     }
 
-    const sql = "DELETE FROM emprestimos WHERE id = ?";
+    const sql = "UPDATE emprestimos SET data_devolucao = NOW() WHERE id = ? AND data_devolucao IS NULL";
+
     db.query(sql, [id], (err, result) => {
         if (err) {
             console.error("Erro ao devolver livro:", err);
@@ -103,12 +113,35 @@ app.post("/devolver", (req, res) => {
         }
 
         if (result.affectedRows === 0) {
-            return res.status(404).json({ message: "Empréstimo não encontrado." });
+            return res.status(404).json({ message: "Empréstimo não encontrado ou já devolvido." });
         }
 
         res.json({ message: "Livro devolvido com sucesso!" });
     });
 });
+
+
+
+app.post("/avaliar", (req, res) => {
+    console.log("Dados recebidos para avaliação:", req.body);
+    const { emprestimo_id, nota, comentario } = req.body;
+
+    if (!emprestimo_id || !nota) {
+        return res.status(400).json({ message: "Empréstimo e nota são obrigatórios." });
+    }
+
+    const sql = "INSERT INTO avaliacoes (emprestimo_id, nota, comentario) VALUES (?, ?, ?)";
+    db.query(sql, [emprestimo_id, nota, comentario || null], (err, result) => {
+        if (err) {
+            console.error("Erro ao salvar avaliação:", err);
+            return res.status(500).json({ message: "Erro ao salvar avaliação." });
+        }
+        res.status(200).json({ message: "Avaliação salva com sucesso!" });
+    });
+});
+
+
+
 
 // Inicia o servidor na porta 3000
 app.listen(3000, () => {
