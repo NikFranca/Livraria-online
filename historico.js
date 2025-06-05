@@ -1,13 +1,11 @@
+// Carrega o histórico de empréstimos
 fetch("http://localhost:3000/historico")
     .then(res => res.json())
     .then(data => {
-        console.log("Dados do histórico:", data);  
         const container = document.getElementById("historico");
         container.innerHTML = "<h2>Histórico de Empréstimos</h2>";
 
         data.forEach(item => {
-            console.log("ID do empréstimo:", item.id);//Verifique se o id está sendo capturado
-
             const div = document.createElement("div");
             div.classList.add("registro");
 
@@ -23,12 +21,11 @@ fetch("http://localhost:3000/historico")
             container.appendChild(div);
         });
 
-        //Adiciona eventos aos botões de devolução
         document.querySelectorAll(".btn-devolver").forEach(button => {
             button.addEventListener("click", () => {
                 const id = button.getAttribute("data-id");
-                const tituloLivro = button.getAttribute("data-titulo"); // pega o título do livro
-                console.log("ID do empréstimo a ser devolvido:", id);//Verifique se o id está sendo capturado
+                const tituloLivro = button.getAttribute("data-titulo");
+
                 if (!id) {
                     alert("ID inválido para devolução!");
                     return;
@@ -39,22 +36,19 @@ fetch("http://localhost:3000/historico")
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ id: Number(id) })
                 })
-                .then(res => res.json())
-                .then(data => {
-                    console.log("Resposta do servidor:", data);
-                    if (data.message === "Livro devolvido com sucesso!") {
-                        button.disabled = true;
-                        button.textContent = "Devolvido";
-
-                        // Agora abre o formulário de avaliação com id e título
-                        abrirFormularioAvaliacao(id, tituloLivro);
-                    }
-                    showToast(data.message);// Exibe a mensagem de sucesso
-                })
-                .catch(err => {
-                    console.error("Erro ao devolver:", err);
-                    showToast("Erro ao comunicar com o servidor.");
-                });
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.message === "Livro devolvido com sucesso!") {
+                            button.disabled = true;
+                            button.textContent = "Devolvido";
+                            abrirFormularioAvaliacao(id, tituloLivro);
+                        }
+                        showToast(data.message);
+                    })
+                    .catch(err => {
+                        console.error("Erro ao devolver:", err);
+                        showToast("Erro ao comunicar com o servidor.");
+                    });
             });
         });
     })
@@ -62,30 +56,111 @@ fetch("http://localhost:3000/historico")
         console.error("Erro ao carregar histórico:", err);
     });
 
-// Função para abrir formulário de avaliação
-function abrirFormularioAvaliacao(emprestimoId, tituloLivro) {
-    const nota = prompt(`Avalie o livro "${tituloLivro}" de 1 a 5:`);
-    const comentario = prompt("Deixe um comentário (opcional):");
+// Mostra um toast simples
+function showToast(message) {
+    const toast = document.getElementById("toast");
+    toast.textContent = message;
+    toast.style.visibility = "visible";
+    setTimeout(() => {
+        toast.style.visibility = "hidden";
+    }, 3000);
+}
 
-    if (nota && !isNaN(nota) && nota >= 1 && nota <= 5) {
-        fetch("http://localhost:3000/avaliar", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                emprestimo_id: emprestimoId,
-                nota: Number(nota),
-                comentario: comentario || ""
-            })
+// Cria e exibe o modal de avaliação
+function abrirFormularioAvaliacao(id, tituloLivro) {
+    const modal = document.createElement("div");
+    modal.id = "avaliacaoModal";
+    modal.style = `
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: rgba(0,0,0,0.5);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 1000;
+    `;
+
+    modal.innerHTML = `
+        <div style="background: white; padding: 20px; border-radius: 8px; max-width: 400px; width: 90%;">
+            <h3>Avaliação do livro: "${tituloLivro}"</h3>
+            <div class="estrelas" style="font-size: 24px; margin: 10px 0;">
+                <span class="estrela" data-value="1">☆</span>
+                <span class="estrela" data-value="2">☆</span>
+                <span class="estrela" data-value="3">☆</span>
+                <span class="estrela" data-value="4">☆</span>
+                <span class="estrela" data-value="5">☆</span>
+            </div>
+            <input type="hidden" id="notaSelecionada" value="0">
+            <textarea id="comentarioAvaliacao" rows="7" style="width: 100%; height: 120px;" placeholder="Deixe seu comentário..."></textarea>
+            <br><br>
+            <button onclick="enviarAvaliacao(${id})">Enviar Avaliação</button>
+            <button onclick="fecharModalAvaliacao()" style="margin-left: 10px;">Cancelar</button>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    adicionarEventosEstrelas();
+}
+
+// Remove o modal da tela
+function fecharModalAvaliacao() {
+    const modal = document.getElementById("avaliacaoModal");
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Adiciona eventos às estrelas
+function adicionarEventosEstrelas() {
+    const estrelas = document.querySelectorAll("#avaliacaoModal .estrela");
+    const inputNota = document.getElementById("notaSelecionada");
+
+    estrelas.forEach(estrela => {
+        estrela.addEventListener("click", () => {
+            const valor = parseInt(estrela.getAttribute("data-value"));
+            inputNota.value = valor;
+
+            estrelas.forEach(e => {
+                const v = parseInt(e.getAttribute("data-value"));
+                e.textContent = v <= valor ? "★" : "☆";
+            });
+            fecharModal();
+        });
+    });
+}
+function fecharModal() {
+    const modal = document.getElementById("avaliacaoModal");
+    if (modal && modal.parentNode) {
+        modal.parentNode.removeChild(modal);
+    }
+}
+
+// Envia a avaliação
+function enviarAvaliacao(emprestimoId) {
+    const nota = parseInt(document.getElementById("notaSelecionada").value);
+    const comentario = document.getElementById("comentarioAvaliacao").value;
+
+    if (!nota || nota < 1 || nota > 5) {
+        alert("Por favor, selecione uma nota de 1 a 5.");
+        return;
+    }
+
+    fetch("http://localhost:3000/avaliar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            emprestimo_id: emprestimoId,
+            nota: nota,
+            comentario: comentario
         })
+    })
         .then(res => res.json())
         .then(data => {
-            alert("Avaliação enviada com sucesso!");
+            showToast("Avaliação enviada com sucesso!");
+            
+            fecharModal();
         })
+        
         .catch(err => {
-            alert("Erro ao enviar avaliação.");
-            console.error(err);
+            console.error("Erro ao enviar avaliação:", err);
+            showToast("Erro ao enviar avaliação.");
         });
-    } else {
-        alert("Avaliação inválida. Por favor, insira um número entre 1 e 5.");
-    }
 }
